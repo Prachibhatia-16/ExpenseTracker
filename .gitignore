@@ -1,0 +1,21 @@
+# Ignore secret keys & token scripts
+client_secret.json
+generate_token.py
+
+# Ignore trackers and datasets
+tracker.py
+tracker_csv.py
+ppt.py
+Personal_Finance_Dataset.csv
+expense_data.csv
+gemini_test.py
+gemini_chatbot.py
+chatbot.py
+
+# Ignore environment folders and pycache
+gemini_env/
+__pycache__/
+
+# Ignore IDE settings
+.vscode/
+

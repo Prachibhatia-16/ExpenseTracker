@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense Tracker - Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="{{ url_for('home') }}" class="nav-brand">💰 Expense Tracker</a>
+      <div class="nav-links">
+        <a href="{{ url_for('add_expense') }}" class="nav-link">Add Expense</a>
+        <a href="{{ url_for('set_budget') }}" class="nav-link">Set Budget</a>
+        <a href="{{ url_for('select_chart') }}" class="nav-link">Charts</a>
+        <a href="{{ url_for('chatbot') }}" class="nav-link">Chatbot</a>
+        <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-title">Budget</span>
+        <span class="stat-value">₹{{ "%.2f"|format(budget|float) }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-title">Total Spent</span>
+        <span class="stat-value">₹{{ "%.2f"|format(total_spent|float) }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-title">Remaining</span>
+        <span class="stat-value" style="color: {{ 'var(--success-color)' if remaining >= 0 else 'var(--danger-color)' }}">
+          ₹{{ "%.2f"|format(remaining|float) }}
+        </span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Expenses Overview</h2>
+        <div class="btn-group">
+          <a href="{{ url_for('export_pdf', year=selected_year, month=selected_month) }}" class="btn btn-secondary">Export PDF</a>
+          <a href="{{ url_for('export_csv', year=selected_year, month=selected_month) }}" class="btn btn-secondary">Export CSV</a>
+        </div>
+      </div>
+
+      <form method="GET" action="{{ url_for('home') }}" class="filters-form">
+        <div class="form-group">
+          <label for="year" class="form-label">Year:</label>
+          <select name="year" id="year" class="form-control">
+            {% for y in range(current_year, current_year-5, -1) %}
+              <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="month" class="form-label">Month:</label>
+          <select name="month" id="month" class="form-control">
+            <option value="">All Months</option>
+            {% for m in range(1, 13) %}
+              <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m|month_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="category" class="form-label">Category:</label>
+          <select name="category" id="category" class="form-control">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}" {% if cat == category %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="search" class="form-label">Search:</label>
+          <input type="text" name="search" id="search" class="form-control" value="{{ search }}" placeholder="Search expenses...">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Apply Filters</button>
+      </form>
+
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Type</th>
+              <th>Receipt</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for expense in expenses %}
+            <tr class="fade-in">
+              <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
+              <td>{{ expense.description }}</td>
+              <td>{{ expense.category }}</td>
+              <td>₹{{ "%.2f"|format(expense.amount|float) }}</td>
+              <td>{{ expense.expense_type }}</td>
+              <td>
+                {% if expense.receipt %}
+                  <a href="{{ url_for('static', filename='receipts/' ~ expense.receipt) }}" target="_blank">View</a>
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
+              <td>
+                <button onclick="deleteExpense({{ expense.id }})" class="btn btn-danger">Delete</button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% if summary %}
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Category Summary</h3>
+      </div>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Total Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for category, amount in summary.items() %}
+            <tr class="fade-in">
+              <td>{{ category }}</td>
+              <td>₹{{ "%.2f"|format(amount|float) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <button id="darkModeToggle" aria-label="Toggle dark mode">🌓</button>
+
+  <script>
+    function deleteExpense(id) {
+      if (confirm('Are you sure you want to delete this expense?')) {
+        window.location.href = '/delete_expense/' + id;
+      }
+    }
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+
+    if (localStorage.getItem('darkMode') === 'enabled') {
+      body.setAttribute('data-theme', 'dark');
+    }
+
+    darkModeToggle.addEventListener('click', () => {
+      if (body.getAttribute('data-theme') === 'dark') {
+        body.removeAttribute('data-theme');
+        localStorage.removeItem('darkMode');
+      } else {
+        body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('darkMode', 'enabled');
+      }
+    });
+  </script>
+</body>
+</html>

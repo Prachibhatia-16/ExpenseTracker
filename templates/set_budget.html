@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Budget - Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('home') }}" class="nav-brand">💰 Expense Tracker</a>
+            <div class="nav-links">
+                <a href="{{ url_for('add_expense') }}" class="nav-link">Add Expense</a>
+                <a href="{{ url_for('set_budget') }}" class="nav-link">Set Budget</a>
+                <a href="{{ url_for('select_chart') }}" class="nav-link">Charts</a>
+                <a href="{{ url_for('chatbot') }}" class="nav-link">Chatbot</a>
+                <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Set Your Budget</h2>
+            </div>
+
+            <form method="POST" action="{{ url_for('set_budget') }}" class="fade-in">
+                <div class="form-group">
+                    <label for="year" class="form-label">Year:</label>
+                    <select name="year" id="year" class="form-control" required>
+                        {% for y in range(current_year, current_year-5, -1) %}
+                            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="month" class="form-label">Month:</label>
+                    <select name="month" id="month" class="form-control">
+                        <option value="">All Months (Yearly Budget)</option>
+                        {% for m in range(1, 13) %}
+                            <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m|month_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="budget" class="form-label">Budget Amount:</label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        <input type="number" id="budget" name="budget" class="form-control" required step="0.01" min="0" placeholder="Enter budget amount">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Set Budget</button>
+                    <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <button id="darkModeToggle" aria-label="Toggle dark mode">🌓</button>
+
+    <script>
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.setAttribute('data-theme', 'dark');
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                localStorage.removeItem('darkMode');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('darkMode', 'enabled');
+            }
+        });
+    </script>
+</body>
+</html>

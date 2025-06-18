@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Expense Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 14px; color: #333; }
+    h1 { text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #2980b9; color: white; }
+    .summary { margin-top: 20px; }
+    .budget-info { margin-top: 20px; font-size: 16px; color: #2c3e50; }
+    .budget-info p { margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <h1>Expense Report</h1>
+  <p><strong>Period:</strong> 
+    {% if month %} {{ month }}/ {% endif %} {{ year }}
+  </p>
+
+  <!-- Budget Info -->
+  <div class="budget-info">
+    <p><strong>Budget:</strong> {{ budget if budget is not none else 'Not Set' }}</p>
+    <p><strong>Total Spent:</strong> {{ "%.2f"|format(total_spent) }}</p>
+    <p>
+      <strong>Remaining:</strong> 
+      <span style="color: {{ 'green' if remaining is not none and remaining >= 0 else 'red' }}; font-weight: 700;">
+        {{ "%.2f"|format(remaining) if remaining is not none else 'N/A' }}
+      </span>
+    </p>
+  </div>
+
+  <div class="summary">
+    <h2>Summary by Category</h2>
+    {% if summary %}
+      <table>
+        <thead>
+          <tr><th>Category</th><th>Amount Spent</th></tr>
+        </thead>
+        <tbody>
+          {% for category, amount in summary.items() %}
+          <tr>
+            <td>{{ category }}</td>
+            <td>{{ "%.2f"|format(amount) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No expenses to display.</p>
+    {% endif %}
+  </div>
+
+  <div class="expenses-list">
+    <h2>Expenses List</h2>
+    {% if expenses %}
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for expense in expenses %}
+          <tr>
+            <td>{{ expense.date }}</td>
+            <td>{{ expense.description }}</td>
+            <td>{{ expense.category }}</td>
+            <td>{{ "%.2f"|format(expense.amount) }}</td>
+            <td>{{ expense.expense_type }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No expenses found.</p>
+    {% endif %}
+  </div>
+
+</body>
+</html>

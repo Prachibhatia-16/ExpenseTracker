@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Expense - Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('home') }}" class="nav-brand">💰 Expense Tracker</a>
+            <div class="nav-links">
+                <a href="{{ url_for('add_expense') }}" class="nav-link">Add Expense</a>
+                <a href="{{ url_for('set_budget') }}" class="nav-link">Set Budget</a>
+                <a href="{{ url_for('select_chart') }}" class="nav-link">Charts</a>
+                <a href="{{ url_for('chatbot') }}" class="nav-link">Chatbot</a>
+                <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Add New Expense</h2>
+            </div>
+
+            <form method="POST" action="{{ url_for('add_expense') }}" enctype="multipart/form-data" class="fade-in">
+                <div class="form-group">
+                    <label for="date" class="form-label">Date:</label>
+                    <input type="date" id="date" name="date" class="form-control" required value="{{ today }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="description" class="form-label">Description:</label>
+                    <input type="text" id="description" name="description" class="form-control" required placeholder="Enter expense description">
+                </div>
+
+                <div class="form-group">
+                    <label for="category" class="form-label">Category:</label>
+                    <select id="category" name="category" class="form-control" required>
+                        <option value="">Select a category</option>
+                        {% for category in categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount" class="form-label">Amount:</label>
+                    <input type="number" id="amount" name="amount" class="form-control" required step="0.01" min="0" placeholder="Enter amount">
+                </div>
+
+                <div class="form-group">
+                    <label for="expense_type" class="form-label">Type:</label>
+                    <select id="expense_type" name="expense_type" class="form-control" required>
+                        <option value="debit">Debit (Expense)</option>
+                        <option value="credit">Credit (Income)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="receipt" class="form-label">Receipt (Optional):</label>
+                    <input type="file" id="receipt" name="receipt" class="form-control" accept="image/*">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Add Expense</button>
+                    <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <button id="darkModeToggle" aria-label="Toggle dark mode">🌓</button>
+
+    <script>
+        // Set today's date as default
+        document.getElementById('date').valueAsDate = new Date();
+
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.setAttribute('data-theme', 'dark');
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                localStorage.removeItem('darkMode');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('darkMode', 'enabled');
+            }
+        });
+    </script>
+</body>
+</html>

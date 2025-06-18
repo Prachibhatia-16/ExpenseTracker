@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign Up</title>
+  <style>
+    /* Light beige background */
+    body {
+      background-color: #f7f2ea; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Container with padding and shadow */
+    .container {
+      max-width: 420px;
+      width: 90%;
+      background: #fff;
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #4a3c8c;
+      margin-bottom: 30px;
+      font-weight: 700;
+      font-size: 2rem;
+      letter-spacing: 1px;
+    }
+
+    /* Flash messages style */
+    .alert {
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .alert-success {
+      background-color: #dff3e3;
+      color: #2a6b28;
+      border: 1.5px solid #2a6b28;
+    }
+
+    .alert-danger {
+      background-color: #fbeaea;
+      color: #a62b2b;
+      border: 1.5px solid #a62b2b;
+    }
+
+    /* Form input fields */
+    form input[type="text"],
+    form input[type="password"],
+    form input[type="email"] {
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      border: 1.5px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+      font-family: inherit;
+    }
+
+    form input[type="text"]:focus,
+    form input[type="password"]:focus,
+    form input[type="email"]:focus {
+      border-color: #7a5af8;
+      outline: none;
+      box-shadow: 0 0 6px rgba(122, 90, 248, 0.5);
+    }
+
+    /* Submit button */
+    form button {
+      width: 100%;
+      padding: 14px 0;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      border: none;
+      background-color: #7a5af8;
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background-color 0.3s ease;
+      margin-top: 10px;
+      font-family: inherit;
+    }
+
+    form button:hover {
+      background-color: #644dc9;
+    }
+
+    /* Bottom text */
+    .bottom-text {
+      text-align: center;
+      margin-top: 25px;
+      color: #6c6c6c;
+      font-size: 0.95rem;
+    }
+
+    .bottom-text a {
+      color: #7a5af8;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .bottom-text a:hover {
+      color: #644dc9;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Sign Up</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('signup') }}">
+      <input
+        type="text"
+        id="username"
+        name="username"
+        placeholder="Username"
+        required
+        autofocus
+      />
+      <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="Email"
+        required
+      />
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Password"
+        required
+      />
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <p class="bottom-text">
+      Already have an account? <a href="{{ url_for('login') }}">Log In</a>
+    </p>
+  </div>
+</body>
+</html>
+
+
+
+
+

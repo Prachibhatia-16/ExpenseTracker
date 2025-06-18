@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chat with Expense Tracker 💰</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style>
+  :root {
+    --chat-bg: #f6f9fc;
+    --chat-container-bg: #ffffff;
+    --chat-input-bg: #f8faff;
+    --chat-border: #e1e8ff;
+    --chat-shadow: rgba(0,0,0,0.08);
+    --chat-text: #333333;
+    --chat-primary: #3a86ff;
+    --chat-primary-hover: #2d76ff;
+    --chat-mic-bg: #ff595e;
+    --chat-mic-hover: #ff4146;
+    --chat-user-msg-bg: #e5edff;
+    --chat-user-msg-text: #1e3a8a;
+    --chat-bot-msg-bg: #ffffff;
+    --chat-bot-msg-text: #333333;
+  }
+
+  [data-theme="dark"] {
+    --chat-bg: #1a1a1a;
+    --chat-container-bg: #2d2d2d;
+    --chat-input-bg: #333333;
+    --chat-border: #404040;
+    --chat-shadow: rgba(0,0,0,0.2);
+    --chat-text: #ffffff;
+    --chat-primary: #4a90e2;
+    --chat-primary-hover: #357abd;
+    --chat-mic-bg: #ff6b6b;
+    --chat-mic-hover: #ff5252;
+    --chat-user-msg-bg: #3a3a3a;
+    --chat-user-msg-text: #ffffff;
+    --chat-bot-msg-bg: #404040;
+    --chat-bot-msg-text: #ffffff;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--chat-bg);
+    color: var(--chat-text);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  .chat-container {
+    background: var(--chat-container-bg);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px var(--chat-shadow);
+    padding: 30px 40px;
+    max-width: 700px;
+    width: 100%;
+    position: relative;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--chat-border);
+    margin: 40px auto;
+  }
+
+  h2 {
+    text-align: center;
+    color: var(--chat-primary);
+    margin-bottom: 25px;
+    font-size: 28px;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(58,134,255,0.1);
+  }
+
+  form {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 15px;
+    background: var(--chat-input-bg);
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: inset 0 2px 4px var(--chat-shadow);
+  }
+
+  input[type="text"] {
+    flex-grow: 1;
+    padding: 14px 18px;
+    border-radius: 10px;
+    border: 2px solid var(--chat-border);
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: var(--chat-container-bg);
+    color: var(--chat-text);
+  }
+
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--chat-primary);
+    box-shadow: 0 0 0 3px rgba(58,134,255,0.2);
+  }
+
+  button {
+    background-color: var(--chat-primary);
+    border: none;
+    color: white;
+    padding: 0 22px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(58,134,255,0.2);
+  }
+
+  button:hover {
+    background-color: var(--chat-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(58,134,255,0.3);
+  }
+
+  button:active {
+    transform: translateY(0);
+  }
+
+  button.mic-btn {
+    background-color: var(--chat-mic-bg);
+    padding: 0 15px;
+    font-size: 20px;
+  }
+
+  button.mic-btn:hover {
+    background-color: var(--chat-mic-hover);
+  }
+
+  #status {
+    font-style: italic;
+    font-size: 14px;
+    color: var(--chat-primary);
+    text-align: center;
+    min-height: 20px;
+    margin-bottom: 15px;
+  }
+
+  #chat-log {
+    background: var(--chat-input-bg);
+    padding: 20px 25px;
+    border-radius: 14px;
+    box-shadow: inset 0 2px 6px var(--chat-shadow);
+    max-height: 500px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+
+  #chat-log::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  #chat-log::-webkit-scrollbar-track {
+    background: var(--chat-input-bg);
+    border-radius: 4px;
+  }
+
+  #chat-log::-webkit-scrollbar-thumb {
+    background: var(--chat-border);
+    border-radius: 4px;
+  }
+
+  #chat-log::-webkit-scrollbar-thumb:hover {
+    background: var(--chat-primary);
+  }
+
+  .message {
+    margin-bottom: 18px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .user-msg {
+    color: var(--chat-user-msg-text);
+    font-weight: 500;
+    background: var(--chat-user-msg-bg);
+    margin-left: 20px;
+    border-top-left-radius: 4px;
+  }
+
+  .bot-msg {
+    color: var(--chat-bot-msg-text);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--chat-bot-msg-bg);
+    margin-right: 20px;
+    border-top-right-radius: 4px;
+    box-shadow: 0 2px 4px var(--chat-shadow);
+  }
+
+  .speaker-btn {
+    background: none;
+    border: none;
+    color: var(--chat-primary);
+    padding: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+  }
+
+  .speaker-btn:hover {
+    background-color: var(--chat-input-bg);
+    color: var(--chat-primary-hover);
+    transform: none;
+  }
+
+  .bot-msg span {
+    flex: 1;
+  }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="{{ url_for('home') }}" class="nav-brand">💰 Expense Tracker</a>
+    <div class="nav-links">
+      <a href="{{ url_for('add_expense') }}" class="nav-link">Add Expense</a>
+      <a href="{{ url_for('set_budget') }}" class="nav-link">Set Budget</a>
+      <a href="{{ url_for('select_chart') }}" class="nav-link">Charts</a>
+      <a href="{{ url_for('chatbot') }}" class="nav-link">Chatbot</a>
+      <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+    </div>
+  </div>
+</nav>
+
+<div class="chat-container">
+  <h2>Chat with Expense Tracker 💰</h2>
+  <form id="chat-form">
+    <input type="text" id="message" name="message" placeholder="Type or speak your message..." autocomplete="off" required />
+    <button type="submit">Send</button>
+    <button type="button" class="mic-btn" title="Speak" onclick="startListening()">🎤</button>
+  </form>
+  <p id="status"></p>
+  <div id="chat-log"></div>
+</div>
+
+<button id="darkModeToggle" aria-label="Toggle dark mode">🌓</button>
+
+<script>
+  const chatForm = document.getElementById('chat-form');
+  const messageInput = document.getElementById('message');
+  const statusEl = document.getElementById('status');
+  const chatLog = document.getElementById('chat-log');
+  let currentUtterance = null;
+
+  // Dark mode toggle
+  const darkModeToggle = document.getElementById('darkModeToggle');
+  const body = document.body;
+
+  // Check for saved dark mode preference
+  if (localStorage.getItem('darkMode') === 'enabled') {
+    body.setAttribute('data-theme', 'dark');
+  }
+
+  darkModeToggle.addEventListener('click', () => {
+    if (body.getAttribute('data-theme') === 'dark') {
+      body.removeAttribute('data-theme');
+      localStorage.setItem('darkMode', 'disabled');
+    } else {
+      body.setAttribute('data-theme', 'dark');
+      localStorage.setItem('darkMode', 'enabled');
+    }
+  });
+
+  // Append message to chat log
+  function appendMessage(sender, text) {
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('message');
+    
+    // Remove asterisks from text
+    text = text.replace(/\*/g, '');
+    
+    if (sender === 'user') {
+      msgDiv.classList.add('user-msg');
+      msgDiv.textContent = `You: ${text}`;
+    } else {
+      msgDiv.classList.add('bot-msg');
+      const textSpan = document.createElement('span');
+      textSpan.textContent = `Expense Tracker: ${text}`;
+      
+      const speakerBtn = document.createElement('button');
+      speakerBtn.classList.add('speaker-btn');
+      speakerBtn.innerHTML = '🔊';
+      speakerBtn.title = 'Click to hear response';
+      speakerBtn.onclick = () => toggleSpeech(text);
+      
+      msgDiv.appendChild(textSpan);
+      msgDiv.appendChild(speakerBtn);
+    }
+    
+    // Add fade-in animation
+    msgDiv.style.opacity = '0';
+    chatLog.appendChild(msgDiv);
+    requestAnimationFrame(() => {
+      msgDiv.style.opacity = '1';
+    });
+    
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  // Toggle speech synthesis
+  function toggleSpeech(text) {
+    if (currentUtterance && window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      currentUtterance = null;
+      return;
+    }
+    
+    if ('speechSynthesis' in window) {
+      currentUtterance = new SpeechSynthesisUtterance(text);
+      currentUtterance.onend = () => {
+        currentUtterance = null;
+      };
+      window.speechSynthesis.speak(currentUtterance);
+    }
+  }
+
+  // Send message to backend
+  async function sendMessage(message) {
+    try {
+      const response = await fetch('/chatbot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message })
+      });
+      if (!response.ok) throw new Error('Network response not ok');
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return "Sorry, something went wrong.";
+    }
+  }
+
+  chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = messageInput.value.trim();
+    if (!msg) return;
+    appendMessage('user', msg);
+    messageInput.value = '';
+    statusEl.textContent = '⌛ Thinking...';
+    const botReply = await sendMessage(msg);
+    statusEl.textContent = '';
+
+    if (botReply.message) {
+      appendMessage('bot', botReply.message);
+    } else if (botReply.action === 'redirect' && botReply.target) {
+      appendMessage('bot', `Redirecting you...`);
+      window.location.href = botReply.target;
+    } else {
+      appendMessage('bot', 'Sorry, I did not get that.');
+    }
+  });
+
+  // Speech recognition
+  function startListening() {
+    if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+      alert('Speech Recognition API not supported in your browser.');
+      return;
+    }
+
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+      statusEl.textContent = '🎧 Listening... Speak now!';
+      messageInput.value = '';
+      messageInput.focus();
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map(result => result[0].transcript)
+        .join('');
+      messageInput.value = transcript;
+    };
+
+    recognition.onerror = (event) => {
+      statusEl.textContent = '⚠️ Error: ' + event.error;
+    };
+
+    recognition.onend = () => {
+      statusEl.textContent = '🛑 Stopped listening.';
+      if (messageInput.value.trim()) {
+        chatForm.dispatchEvent(new Event('submit'));
+      }
+    };
+
+    recognition.start();
+  }
+</script>
+</body>
+</html>

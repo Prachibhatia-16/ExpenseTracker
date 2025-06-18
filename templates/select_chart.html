@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Chart - Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .chart-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .chart-option {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px var(--shadow-color);
+        }
+
+        .chart-option.selected {
+            border-color: var(--primary-color);
+            background: var(--input-bg);
+        }
+
+        .chart-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .chart-description {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .chart-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .chart-option label {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chart-option label:hover {
+            background: var(--primary-hover);
+        }
+
+        .chart-option.selected label {
+            background: var(--primary-hover);
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .filter-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-title {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .filter-select {
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(58,134,255,0.2);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .chart-selection {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .form-actions button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('home') }}" class="nav-brand">💰 Expense Tracker</a>
+            <div class="nav-links">
+                <a href="{{ url_for('add_expense') }}" class="nav-link">Add Expense</a>
+                <a href="{{ url_for('set_budget') }}" class="nav-link">Set Budget</a>
+                <a href="{{ url_for('select_chart') }}" class="nav-link">Charts</a>
+                <a href="{{ url_for('chatbot') }}" class="nav-link">Chatbot</a>
+                <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="form-container">
+        <div class="filter-section">
+            <h2 class="filter-title">Select Chart Type</h2>
+            <form method="GET" action="{{ url_for('summary_chart') }}" class="fade-in">
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label for="year" class="filter-label">Year:</label>
+                        <select name="year" id="year" class="filter-select" required>
+                            {% for y in range(current_year, current_year-5, -1) %}
+                                <option value="{{ y }}">{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="month" class="filter-label">Month (Optional):</label>
+                        <select name="month" id="month" class="filter-select">
+                            <option value="">All Months</option>
+                            {% for m in range(1, 13) %}
+                                <option value="{{ m }}">{{ m|month_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="chart-selection">
+                    <div class="chart-option" onclick="selectChart('pie')">
+                        <div class="chart-icon">📊</div>
+                        <h3 class="chart-title">Pie Chart</h3>
+                        <p class="chart-description">View your expenses distribution by category</p>
+                        <input type="radio" name="chart_type" value="pie" id="pie" class="visually-hidden" required>
+                        <label for="pie">Select</label>
+                    </div>
+
+                    <div class="chart-option" onclick="selectChart('line')">
+                        <div class="chart-icon">📈</div>
+                        <h3 class="chart-title">Line Chart</h3>
+                        <p class="chart-description">Track your spending trends over time</p>
+                        <input type="radio" name="chart_type" value="line" id="line" class="visually-hidden" required>
+                        <label for="line">Select</label>
+                    </div>
+
+                    <div class="chart-option" onclick="selectChart('bar')">
+                        <div class="chart-icon">📊</div>
+                        <h3 class="chart-title">Bar Chart</h3>
+                        <p class="chart-description">Compare expenses across categories</p>
+                        <input type="radio" name="chart_type" value="bar" id="bar" class="visually-hidden" required>
+                        <label for="bar">Select</label>
+                    </div>
+
+                    <div class="chart-option" onclick="selectChart('budget_vs_actual')">
+                        <div class="chart-icon">💰</div>
+                        <h3 class="chart-title">Budget vs Actual</h3>
+                        <p class="chart-description">Compare your spending against budget</p>
+                        <input type="radio" name="chart_type" value="budget_vs_actual" id="budget_vs_actual" class="visually-hidden" required>
+                        <label for="budget_vs_actual">Select</label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Generate Chart</button>
+                    <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <button id="darkModeToggle" aria-label="Toggle dark mode">🌓</button>
+
+    <script>
+        function selectChart(type) {
+            // Unselect all options
+            document.querySelectorAll('.chart-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Select clicked option
+            const selectedOption = document.querySelector(`[onclick="selectChart('${type}')"]`);
+            selectedOption.classList.add('selected');
+            
+            // Check the radio button
+            document.getElementById(type).checked = true;
+        }
+
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.setAttribute('data-theme', 'dark');
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                localStorage.setItem('darkMode', 'disabled');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('darkMode', 'enabled');
+            }
+        });
+    </script>
+</body>
+</html>

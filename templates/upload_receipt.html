@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Receipt</title>
+</head>
+<body>
+    <h2>Upload Receipt for Expense #{{ expense_id }}</h2>
+    <form action="{{ url_for('upload_receipt', expense_id=expense_id) }}" method="POST" enctype="multipart/form-data">
+        <input type="file" name="receipt" accept="image/*" required>
+        <button type="submit">Upload Receipt</button>
+    </form>
+    <a href="{{ url_for('home') }}">Back to Expenses</a>
+</body>
+</html>

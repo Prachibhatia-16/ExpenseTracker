@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Expense Summary Chart</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    img { max-width: 90%; height: auto; margin-top: 20px; border: 1px solid #ccc; }
+    a { display: inline-block; margin-top: 20px; text-decoration: none; color: #007BFF; }
+    .info {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>Expense Summary Chart</h1>
+
+  {% if chart_data %}
+    <img src="data:image/png;base64,{{ chart_data }}" alt="Chart Image">
+  {% else %}
+    <p>No chart to display.</p>
+  {% endif %}
+
+  <div class="info">
+    <!-- Show currently selected year and month from session -->
+    {% if session.selected_year %}
+      <p><strong>Year:</strong> {{ session.selected_year }}</p>
+    {% endif %}
+    {% if session.selected_month %}
+      <p><strong>Month:</strong> {{ session.selected_month }}</p>
+    {% else %}
+      <p><strong>Month:</strong> All months</p>
+    {% endif %}
+  </div>
+
+  <a href="{{ url_for('select_chart') }}">← Back to Chart Selection</a>
+  <br>
+  <a href="{{ url_for('home') }}">← Back to Home</a>
+</body>
+</html>
