@@ -52,8 +52,8 @@
       <div class="card-header">
         <h2 class="card-title">Expenses Overview</h2>
         <div class="btn-group">
-          <a href="{{ url_for('export_pdf', year=selected_year, month=selected_month) }}" class="btn btn-secondary">Export PDF</a>
-          <a href="{{ url_for('export_csv', year=selected_year, month=selected_month) }}" class="btn btn-secondary">Export CSV</a>
+          <a href="{{ url_for('export_pdf', year=selected_year, month=selected_month, category=category, search=search) }}" class="btn btn-secondary">Export PDF</a>
+  <a href="{{ url_for('export_csv', year=selected_year, month=selected_month, category=category, search=search) }}" class="btn btn-secondary">Export CSV</a>
         </div>
       </div>
 

@@ -656,10 +656,19 @@ def export_pdf():
     selected_year = request.args.get('year', type=int)
     if selected_year is None:
         selected_year = datetime.now().year
+
     selected_month = request.args.get('month', type=int)
     category = request.args.get('category', default=None, type=str)
     search = request.args.get('search', default=None, type=str)
+
+    # Clean the search keyword
+    if search:
+        search = search.strip()
+        if not search:
+            search = None
+
     user_id = session.get('user_id')
+
     expenses = load_expenses(
         year=selected_year,
         month=selected_month,
@@ -667,11 +676,12 @@ def export_pdf():
         search=search,
         user_id=user_id
     )
+
     for e in expenses:
         if isinstance(e['date'], str):
             e['date'] = datetime.strptime(e['date'], '%Y-%m-%d')
-    
-    # Convert all monetary values to Decimal for consistent handling
+
+    # Convert all monetary values to Decimal
     summary = {}
     total_spent = Decimal('0')
     for e in expenses:
@@ -679,11 +689,10 @@ def export_pdf():
         category = e['category']
         summary[category] = summary.get(category, Decimal('0')) + amount
         total_spent += amount
-    
-    # Convert budget to Decimal
+
     budget = Decimal(str(get_budget(selected_year, selected_month, user_id)))
     remaining = budget - total_spent if budget is not None else None
-    
+
     rendered_html = render_template(
         'pdf_report.html',
         year=selected_year,
@@ -692,15 +701,17 @@ def export_pdf():
         search=search,
         expenses=expenses,
         summary=summary,
-        budget=float(budget),  # Convert back to float for template
-        total_spent=float(total_spent),  # Convert back to float for template
-        remaining=float(remaining) if remaining is not None else None  # Convert back to float for template
+        budget=float(budget),
+        total_spent=float(total_spent),
+        remaining=float(remaining) if remaining is not None else None
     )
+
     pdf = HTML(string=rendered_html).write_pdf()
     response = make_response(pdf)
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = f'attachment; filename=expenses_{selected_year}_{selected_month or "all"}.pdf'
     return response
+
 
 @app.route('/export_csv')
 @login_required
@@ -709,12 +720,21 @@ def export_csv():
     if not user_id:
         flash("Unauthorized access. Please login.", "danger")
         return redirect(url_for('login'))
+
     selected_year = request.args.get('year', type=int)
     if selected_year is None:
         selected_year = datetime.now().year
+
     selected_month = request.args.get('month', type=int)
     category = request.args.get('category', default=None, type=str)
     search = request.args.get('search', default=None, type=str)
+
+    # Clean the search keyword
+    if search:
+        search = search.strip()
+        if not search:
+            search = None
+
     expenses = load_expenses(
         year=selected_year,
         month=selected_month,
@@ -722,9 +742,11 @@ def export_csv():
         search=search,
         user_id=user_id
     )
+
     for e in expenses:
         if isinstance(e['date'], str):
             e['date'] = datetime.strptime(e['date'], '%Y-%m-%d')
+
     data = [{
         'date': e['date'].strftime('%Y-%m-%d'),
         'description': e['description'],
@@ -732,10 +754,12 @@ def export_csv():
         'amount': e['amount'],
         'expense_type': e['expense_type']
     } for e in expenses]
+
     df = pd.DataFrame(data)
     csv_buffer = BytesIO()
     df.to_csv(csv_buffer, index=False)
     csv_buffer.seek(0)
+
     return send_file(
         csv_buffer,
         mimetype='text/csv',
