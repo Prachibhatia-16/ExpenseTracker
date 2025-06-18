@@ -13,6 +13,7 @@ gemini_chatbot.py
 chatbot.py
 test_emotion.py
 testGemini.py
+.env
 # Ignore environment folders and pycache
 gemini_env/
 __pycache__/
