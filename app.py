@@ -25,6 +25,8 @@ from calendar import month_name
 from fpdf import FPDF
 from werkzeug.security import generate_password_hash, check_password_hash
 from typing import Dict, List, Optional, Union, Any, Sequence, cast, Tuple, TypedDict, TypeVar, Mapping
+from dotenv import load_dotenv
+load_dotenv()
 
 T = TypeVar('T')
 
@@ -37,7 +39,7 @@ app = Flask(__name__)
 model = None
 try:
     import google.generativeai as genai
-    genai.configure(api_key='AIzaSyBRDfBOoDQquy3wxGNzVYItFenfaHet358')
+    genai.configure(api_key=os.environ.get("SECRET_KEY"))
     model = genai.GenerativeModel('gemini-2.0-flash')
 except ImportError:
     print("Warning: google-generativeai package is not installed")
