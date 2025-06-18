@@ -11,7 +11,8 @@ expense_data.csv
 gemini_test.py
 gemini_chatbot.py
 chatbot.py
-
+test_emotion.py
+testGemini.py
 # Ignore environment folders and pycache
 gemini_env/
 __pycache__/
